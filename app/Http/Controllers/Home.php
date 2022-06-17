@@ -16,7 +16,7 @@ class Home extends Controller
         $last_sync = LastSync::first();
         $today_date = Carbon::now()->toDate()->format('Y-m-d');
 
-        if ( $last_sync->last_sync_date !== $today_date ) {
+        if ( !$last_sync || $last_sync->last_sync_date !== $today_date ) {
             self::sync_photos();
         }
 
@@ -75,9 +75,21 @@ class Home extends Controller
                     'pexel_tiny' => $photo->src->tiny
                 ]);
             }
-            LastSync::first()->update(['last_sync_date' => Carbon::now()->toDate()->format('Y-m-d')]);
+
+            $last_sync = LastSync::first();
+
+            if ( !$last_sync ) {
+                LastSync::create(['last_sync_date' => Carbon::now()->toDate()->format('Y-m-d')]);
+            } else {
+                LastSync::first()->update(['last_sync_date' => Carbon::now()->toDate()->format('Y-m-d')]);
+            }
         } catch (\Exception $exp) {
-            LastSync::first()->update(['last_sync_date' => Carbon::now()->toDate()->format('Y-m-d')]);
+            $last_sync = LastSync::first();
+            if ( !$last_sync ) {
+                LastSync::create(['last_sync_date' => Carbon::now()->toDate()->format('Y-m-d')]);
+            } else {
+                LastSync::first()->update(['last_sync_date' => Carbon::now()->toDate()->format('Y-m-d')]);
+            }
         }
     }
 }
